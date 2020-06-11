@@ -1,6 +1,8 @@
 import math as mh
 
 def MakeCanvas(x, y):
+    x+=1
+    y+=1
     arr = []
     for _ in range(x):
         arr.append([])
@@ -25,16 +27,50 @@ def MakeRectangle(x, y):
         arr[j][-1] = True
     return arr
 
-def MakeCircle(radius=50, width=4):
+def MakeCircle(radius=50, width=4, detail=0.01):
     arr = MakeCanvas(radius*2, radius*2)
-    #center = (radius, radius)
+    center = (radius, radius)
+    i = -mh.pi
+    while i < mh.pi:
+        xMod = int(round(mh.cos(i)*radius, 0))
+        yMod = int(round(mh.sin(i)*radius, 0))
+        arr[radius+xMod][radius+yMod] = True
+        i+=detail
 
-    r2 = radius**2
-    lowR2 = r2 - width/2
-    hiR2 = r2 + width/2
-    for x, line in enumerate(arr):
-        for y, el in enumerate(line):
-            sqSum = (x+radius)**2 + (y+radius)**2
-            if lowR2 <= sqSum <= hiR2:
-                arr[x][y] = True
     return arr
+
+def MakeLine(start, end, detail=0.01):
+
+    xStart = start[0]
+    yStart = start[1]
+    xEnd = end[0]
+    yEnd = end[1]
+
+    xMax = xStart-xEnd if xStart > xEnd else xEnd-xStart
+    yMax = yStart-yEnd if yStart > yEnd else yEnd-yStart
+    increm = yMax if yMax > xMax else xMax
+    print("increm is", increm)
+
+    arr = MakeCanvas(xMax, yMax)
+
+    xAdd = (xEnd-xStart)/increm
+    yAdd = (yEnd - yStart)/increm
+
+    print(xAdd, yAdd)
+    print(len(arr), "and", len(arr[0]))
+    print(xEnd, yEnd)
+    xTrue, yTrue = xStart,yStart
+
+    for _ in range(increm):
+        #print(xTrue, yTrue)
+        arr[round(xTrue)][round(yTrue)]=True
+        xTrue += xAdd
+        yTrue += yAdd
+
+    return arr
+
+
+
+    
+
+
