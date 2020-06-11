@@ -45,6 +45,10 @@ def CanvasToPixels(canvas):
 def FormImage(canvas):
     canvas = CanvasToPixels(canvas)
     npCanvas = np.asarray(canvas)
+
+    #this is here because I visualized my array differently than the people who made the modules
+    npCanvas = np.swapaxes(npCanvas,0,1)
+
     img = npCanvas.astype(np.uint8)
     fileName = GetSaveName(DefaultName())
     
@@ -55,7 +59,7 @@ def FormImage(canvas):
     im = Image.open(fileName)  
     im.show()
     inp = input("type 'del' to delete that image: ")
-    if inp == "del":
+    if inp.lower() == "del":
         remove(fileName)
         print("file deleted")
     else:

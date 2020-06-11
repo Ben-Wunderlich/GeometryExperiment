@@ -1,5 +1,6 @@
 import shapegenerator as sg
 import imagemaker as im
+import math as mh
 
 #adds from top left start
 def AddShapeToCanvas(shape, canvas, xStart, yStart):
@@ -13,10 +14,24 @@ def AddShapeToCanvas(shape, canvas, xStart, yStart):
 WIDTH = 500
 HEIGHT = 500
 
+#failed polygon    
+def CreateNonPolygon(canvas,xStart, yStart, radius=100, sides=150):
+    points = sg.PolygonPoints(sides, radius)#[p1, p2, etc]
+    #print("points are", points)
+    last = -1
+    for x,y in points:
+        if last == -1:
+            last = (x,y)
+            continue
+        AddShapeToCanvas(sg.MakeLine(last, (x,y)), canvas, xStart+x, yStart+y)
+        
+
 def CreateShapes(canvas):
-    #for i in range(10):
-    #    AddShapeToCanvas(sg.MakeSquare(300), canvas, i*5, i*5)
-    AddShapeToCanvas(sg.MakeLine((0,0), (20, 50)), canvas, 40, 40)
+    #CreatePolygon(canvas, 200, 180, 150, 300)
+    #for i in range(50):
+        #AddShapeToCanvas(sg.MakeSquare((WIDTH//2)+i*5), canvas, WIDTH//2 -i*5, WIDTH//2 -i*5)
+    #for i in range(20):
+    #AddShapeToCanvas(sg.MakeLine((30,60), (20, 80)), canvas, 10, 200)
 
 def OutlineCanvas(canvas):
     AddShapeToCanvas(sg.MakeRectangle(WIDTH-1, HEIGHT-1), canvas, 0, 0)
