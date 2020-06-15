@@ -1,8 +1,15 @@
 import math as mh
 
+def FillPixel(canvas, location):
+    #print(location)
+    if location[0] < 0 or location[0] >= len(canvas):
+        return
+    if location[0] < 0 or location[1] >= len(canvas[0]):
+        return
+        #print(len(canvas))
+    canvas[location[0]][location[1]] = True
+
 def MakeCanvas(x, y):
-    x+=1
-    y+=1
     arr = []
     for _ in range(x):
         arr.append([])
@@ -10,36 +17,34 @@ def MakeCanvas(x, y):
             arr[-1].append(False)
     return arr
 
+#draws from top left
+def MakeSquare(canvas, x, start):
+    return MakeRectangle(canvas, x, x, start)
 
 #draws from top left
-def MakeSquare(x):
-    return MakeRectangle(x, x)
+def MakeRectangle(canvas, x, y, start):
+    for i in range(x):#fixing y and painting top and bottom
+        FillPixel(canvas, (start[0]+i, start[1]))
+        #canvas[start[0]+i][start[1]] = 
+        FillPixel(canvas, (start[0]+i, start[1]+y))
+        #canvas[start[0]+i][start[1]+y] = True
 
-#draws from top left
-def MakeRectangle(x, y):
-    arr = MakeCanvas(x, y)
-    for i in range(x):#all of start and end arrays
-        arr[0][i] = True
-        arr[-1][i] = True
+    for j in range(y):#fixing x and painting sides
+        FillPixel(canvas, (start[0], start[1]+j))
+        #canvas[start[0]][start[1]+j] = True
+        FillPixel(canvas, (start[0]+x, start[1]+j))
+        #canvas[start[0]+x][start[1]+j] = True
 
-    for j in range(y):#first and last of intermediate arrays
-        arr[j][0] = True
-        arr[j][-1] = True
-    return arr
-
-def MakeCircle(radius=50, width=4, detail=0.01):
-    arr = MakeCanvas(radius*2, radius*2)
-    center = (radius, radius)
+def MakeCircle(canvas, center, radius=50, detail=0.01):
     i = -mh.pi
     while i < mh.pi:
         xMod = int(round(mh.cos(i)*radius, 0))
         yMod = int(round(mh.sin(i)*radius, 0))
-        arr[radius+xMod][radius+yMod] = True
+        FillPixel(canvas, (xMod+center[0], yMod+center[0]))
+        #canvas[xMod+center[0]][yMod+center[0]] = True
         i+=detail
 
-    return arr
-
-def MakeLine(start, end, detail=0.01, canvas=None):
+def MakeLine(canvas, start, end, detail=0.01):
 
     xStart = start[0]
     yStart = start[1]
@@ -49,53 +54,168 @@ def MakeLine(start, end, detail=0.01, canvas=None):
     xMax = xStart-xEnd if xStart > xEnd else xEnd-xStart
     yMax = yStart-yEnd if yStart > yEnd else yEnd-yStart
     increm = yMax if yMax > xMax else xMax
+    if increm == 0:#is a single point
+        FillPixel(canvas, start)
+        return
     #print("increm is", increm)
-
-    arr = MakeCanvas(xMax, yMax)
 
     xAdd = (xEnd-xStart)/increm
     yAdd = (yEnd - yStart)/increm
 
     #print("additives are", xAdd, yAdd)
     #print("lens are", len(arr), "and", len(arr[0]))
-
     xTrue, yTrue = xStart,yStart
-    '''if xAdd < 0:
-        xTrue = xEnd
-    if yAdd < 0:
-        yTrue = yEnd'''
-    
 
     for _ in range(increm):
         #print("currently at", xTrue, yTrue)
-        arr[round(xTrue-xEnd)][round(yTrue-yEnd)]=True
+        FillPixel(canvas, (round(xTrue), round(yTrue)))
+        #canvas[round(xTrue)][round(yTrue)]=True
         xTrue += xAdd
         yTrue += yAdd
 
-    return arr
-
-def PolygonPoints(numSides, radius):
+def PolygonPoints(numSides, radius, origin=(0,0)):
     arr=[]
     '''for (int i = 0; i < numPoints; i++)
         x = centreX + radius * sin(i * angle);
         y = centreY + radius * cos(i * angle);'''
     tempVal = 2*mh.pi/numSides
     for i in range(numSides):
-        x = round(radius*mh.cos(tempVal*i))
-        y = round(radius*mh.sin(tempVal*i))
+        x = round(radius*mh.cos(tempVal*i))+origin[0]
+        y = round(radius*mh.sin(tempVal*i))+origin[1]
         arr.append((x,y))
     return arr
 
-def CreatePolygon(canvas,xStart, yStart, radius=50, sides=5):
-    points = PolygonPoints(sides, radius)#[p1, p2, etc]
+def MakePolygon(canvas, origin, radius=50, sides=5):
+    if sides < 2:
+        print("cannot make a polygon with {} side(s)".format(sides))
+        return
+    points = PolygonPoints(sides, radius, origin)#[p1, p2, etc]
     #print("points are", points)
     last = -1
-    for x,y in points:
+    for coord in points:
         if last == -1:
-            last = (x,y)
+            last = coord
             continue
-        AddShapeToCanvas(sg.MakeLine(last, (x,y)), canvas, xStart+x, yStart+y)
+        MakeLine(canvas, coord, last)
+        last = coord
+    MakeLine(canvas, last, points[0])
+    
+#see https://en.wikipedia.org/wiki/Hypotrochoid for specifics
+def MakeHypotrochoid(canvas, origin, loR, hiR, d, size=10):
+    detail = 0.005
 
+    frustration = 0
+    frustrationLimit = 50
+    takenPositions = set()
+
+    i=1
+
+    tempNum = ((hiR-loR)/loR)
+    tempNum2 = (hiR-loR)
+    while True:
+        x=tempNum2*mh.cos(i)+d*mh.cos(tempNum*i)
+        x*=size
+        y =tempNum2*mh.sin(i)-d*mh.sin(tempNum*i)
+        y*=size
+        x,y = int(round(x+origin[0])), int(round(y+origin[1]))
+
+        if (x,y) in takenPositions:
+            frustration+=1
+            if frustration >= frustrationLimit:
+                return
+        else:
+            takenPositions.add((x,y))
+            frustration = 0
+        FillPixel(canvas, (x,y))
+        i+=detail
     
 
+def MakeMaurer(canvas, origin, seed, otherSeed, size=80):
 
+    last = None
+    for theta in range(361):
+        k = theta * otherSeed * mh.pi / 180
+        r = 300 * mh.sin(seed * k)
+        x = int(round(r * mh.cos(k))) + origin[0]
+        y = int(round(r * mh.sin(k))) + origin[1]
+
+        if last is not None:
+            MakeLine(canvas, last, (x,y))
+            #FillPixel(canvas, (x+origin[0],y+origin[1]))
+        last = (x,y)
+
+def MakeHorlage(canvas, start, seed1, seed2, size=80):
+    i=0
+    theta = seed2
+    last = None
+    while True:
+        theta += 1
+        x=int(round(mh.sin(theta*seed1*seed2)))*size+start[0]
+        y=int(round(mh.cos(seed2*theta)))*size+start[1]
+        if last is not None:
+            MakeLine(canvas, last, (x,y))
+        last = (x,y)
+        if theta >= 360:
+            return
+
+def MakeHyperSpiral(canvas, origin, a, max, size=80):
+    detail = 0.5
+    i=0.01
+
+    last = None
+    while i < max:
+        x = int(round(a*mh.cos(i)/i))*size + origin[0]
+        y = int(round(a*mh.sin(i)/i))*size + origin[1]
+
+        if last is not None:
+            MakeLine(canvas, (x,y), last)
+        last = (x,y)
+        #FillPixel(canvas, (x,y))
+        i+=detail
+
+def MakeCochleoid(canvas, origin, seed, size=80):
+    last = None
+    max = 200
+    detail = 0.5
+    i = 0.01
+    while i < max:
+
+        x = int(round(seed*mh.cos(i) * mh.sin(i)/ i))*size + origin[0]
+        y = int(round(seed*(mh.sin(i)**2)/i))*size + origin[1]
+
+        if last is not None:
+            MakeLine(canvas, (x,y), last)
+        last = (x,y)
+        i+=detail
+
+def MakeRorshack(canvas, center, a, b, c ,d, size=50):
+    last = None
+    max = 50
+    detail = 0.05
+
+    i=0
+    while i < max:
+        x = mh.cos(a*i) - mh.cos(b*i)**3
+        y = mh.sin(c*i) - mh.sin(d*i)**4
+        x = int(round(x))*size + center[0]
+        y = int(round(y))*size + center[1]
+        
+        if last is not None:
+            MakeLine(canvas, (x,y), last)
+            #FillPixel(canvas, last)
+        last = (x,y)
+        i+=detail
+
+def MakeParametric(canvas, center, size=50):
+    last = None
+    max = 100
+
+    for i in range(max):
+        x = None
+        y = None
+        x = int(round(x))*size + center[0]
+        y = int(round(y))*size + center[1]
+
+        if last is not None:
+            MakeLine(canvas, (x,y), last)
+        last = (x,y)

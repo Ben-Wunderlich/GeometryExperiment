@@ -4,8 +4,9 @@ from imageio import imwrite
 import random
 import string
 import os.path as op
-from os import remove
-from PIL import Image 
+from os import remove, rename
+from PIL import Image
+from pathvalidate import sanitize_filename
 
 def DefaultName(size=10):  
     options = string.ascii_lowercase + string.digits + string.ascii_uppercase
@@ -18,6 +19,7 @@ def GetSaveName(defaultName):
 
     while NameIsTaken(MakeNameProper(inp)):
         inp = input("'{}' is taken, enter new name or press enter to save as {}\n".format(inp,defaultName))
+        inp = sanitize_filename(inp)
         if inp == "":
             inp = defaultName
 
@@ -50,7 +52,7 @@ def FormImage(canvas):
     npCanvas = np.swapaxes(npCanvas,0,1)
 
     img = npCanvas.astype(np.uint8)
-    fileName = GetSaveName(DefaultName())
+    fileName = MakeNameProper(DefaultName())
     
     imwrite(fileName, img)
     print("image created")
@@ -58,9 +60,14 @@ def FormImage(canvas):
     #open image
     im = Image.open(fileName)  
     im.show()
-    inp = input("type 'del' to delete that image: ")
+    inp = input("type 'del' to delete that image or 're' to rename it: ")
     if inp.lower() == "del":
         remove(fileName)
         print("file deleted")
     else:
         print("image kept")
+    if inp.lower() == "re":
+        newName = GetSaveName(fileName)
+        rename(fileName, newName)
+
+
