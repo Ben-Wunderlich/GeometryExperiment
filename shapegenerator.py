@@ -130,92 +130,96 @@ def MakeHypotrochoid(canvas, origin, loR, hiR, d, size=10):
         i+=detail
     
 
-def MakeMaurer(canvas, origin, seed, otherSeed, size=80):
-
-    last = None
-    for theta in range(361):
-        k = theta * otherSeed * mh.pi / 180
-        r = 300 * mh.sin(seed * k)
-        x = int(round(r * mh.cos(k))) + origin[0]
-        y = int(round(r * mh.sin(k))) + origin[1]
-
-        if last is not None:
-            MakeLine(canvas, last, (x,y))
-            #FillPixel(canvas, (x+origin[0],y+origin[1]))
-        last = (x,y)
-
-def MakeHorlage(canvas, start, seed1, seed2, size=80):
-    i=0
-    theta = seed2
-    last = None
-    while True:
-        theta += 1
-        x=int(round(mh.sin(theta*seed1*seed2)))*size+start[0]
-        y=int(round(mh.cos(seed2*theta)))*size+start[1]
-        if last is not None:
-            MakeLine(canvas, last, (x,y))
-        last = (x,y)
-        if theta >= 360:
-            return
-
-def MakeHyperSpiral(canvas, origin, a, max, size=80):
-    detail = 0.5
-    i=0.01
-
-    last = None
+def MakeMaurer(canvas, origin, seed, otherSeed, size=20):
+    max = 60
+    detail = 0.01
+    i =0
     while i < max:
-        x = int(round(a*mh.cos(i)/i))*size + origin[0]
-        y = int(round(a*mh.sin(i)/i))*size + origin[1]
+        k = i * otherSeed * mh.pi / 180
+        r = 300 * mh.sin(seed * k)
+        x = int(round((r * mh.cos(k)) + origin[0]))
+        y = int(round((r * mh.sin(k)) + origin[1]))
 
-        if last is not None:
-            MakeLine(canvas, (x,y), last)
-        last = (x,y)
-        #FillPixel(canvas, (x,y))
+        FillPixel(canvas, (x+origin[0],y+origin[1]))
         i+=detail
 
-def MakeCochleoid(canvas, origin, seed, size=80):
-    last = None
-    max = 200
-    detail = 0.5
+
+
+def MakeHyperSpiral(canvas, origin, max, size=80):
+    detail = 0.01
+    i=0.001
+
+    while i < max:
+        x = int(round(mh.cos(i)/i*size + origin[0]))
+        y = int(round(mh.sin(i)/i*size + origin[1]))
+
+        FillPixel(canvas, (x,y))
+        i+=detail
+
+#looks uninteresting
+def MakeCochleoid(canvas, origin, seed, max, size=80):
+    detail = 0.05
     i = 0.01
     while i < max:
 
-        x = int(round(seed*mh.cos(i) * mh.sin(i)/ i))*size + origin[0]
-        y = int(round(seed*(mh.sin(i)**2)/i))*size + origin[1]
+        x = int(round((seed*mh.cos(i) * mh.sin(i)/ i)*size + origin[0]))
+        y = int(round((seed*(mh.sin(i)**2)/i)*size + origin[1]))
 
-        if last is not None:
-            MakeLine(canvas, (x,y), last)
-        last = (x,y)
+        FillPixel(canvas, (x,y))
+
         i+=detail
 
-def MakeRorshack(canvas, center, a, b, c ,d, size=50):
-    last = None
-    max = 50
-    detail = 0.05
+#looks uninteresting
+def MakeRorshack(canvas, center, a, b, c ,d, max=200, size=150):
+    #last = None
+    max = 400
+    detail = 0.01
 
     i=0
     while i < max:
         x = mh.cos(a*i) - mh.cos(b*i)**3
         y = mh.sin(c*i) - mh.sin(d*i)**4
-        x = int(round(x))*size + center[0]
-        y = int(round(y))*size + center[1]
+        x = int(round(x*size + center[0]))
+        y = int(round(y*size + center[1]))
         
-        if last is not None:
-            MakeLine(canvas, (x,y), last)
-            #FillPixel(canvas, last)
-        last = (x,y)
+        #if last is not None:
+        #    MakeLine(canvas, (x,y), last)
+        FillPixel(canvas, (x,y))
+        #last = (x,y)
+        i+=detail
+
+def MakeLissajous(canvas, center, xLobes, yLobes, size=50):
+    last = None
+    max = 100
+    detail=0.01
+
+    i=0
+    while i < max:
+        x = mh.cos(xLobes*i)
+        y = mh.sin(yLobes*i)
+        x = int(round(x*size + center[0]))
+        y = int(round(y*size + center[1]))
+
+        FillPixel(canvas, (x,y))
+        #if last is not None:
+            #MakeLine(canvas, (x,y), last)
+        #last = (x,y)
         i+=detail
 
 def MakeParametric(canvas, center, size=50):
-    last = None
+    #last = None
     max = 100
+    i=0.01
+    detail=0.01
 
-    for i in range(max):
+    while i < max:
         x = None
         y = None
-        x = int(round(x))*size + center[0]
-        y = int(round(y))*size + center[1]
+        x = int(round(x*size + center[0]))
+        y = int(round(y*size + center[1]))
 
-        if last is not None:
-            MakeLine(canvas, (x,y), last)
-        last = (x,y)
+        FillPixel(canvas, (x,y))
+        #if last is not None:
+            #MakeLine(canvas, (x,y), last)
+        #last = (x,y)
+        i+=detail
