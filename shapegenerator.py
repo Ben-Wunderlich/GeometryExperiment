@@ -4,7 +4,7 @@ def FillPixel(canvas, location):
     #print(location)
     if location[0] < 0 or location[0] >= len(canvas):
         return
-    if location[0] < 0 or location[1] >= len(canvas[0]):
+    if location[1] < 0 or location[1] >= len(canvas[0]):
         return
         #print(len(canvas))
     canvas[location[0]][location[1]] = True
@@ -40,7 +40,7 @@ def MakeCircle(canvas, center, radius=50, detail=0.01):
     while i < mh.pi:
         xMod = int(round(mh.cos(i)*radius, 0))
         yMod = int(round(mh.sin(i)*radius, 0))
-        FillPixel(canvas, (xMod+center[0], yMod+center[0]))
+        FillPixel(canvas, (xMod+center[0], yMod+center[1]))
         #canvas[xMod+center[0]][yMod+center[0]] = True
         i+=detail
 
@@ -132,13 +132,13 @@ def MakeHypotrochoid(canvas, origin, loR, hiR, d, size=10):
 
 def MakeMaurer(canvas, origin, seed, otherSeed, size=20):
     max = 60
-    detail = 0.01
+    detail = 0.003
     i =0
     while i < max:
         k = i * otherSeed * mh.pi / 180
         r = 300 * mh.sin(seed * k)
-        x = int(round((r * mh.cos(k)) + origin[0]))
-        y = int(round((r * mh.sin(k)) + origin[1]))
+        x = int(round((r * mh.cos(k))*size + origin[0]))
+        y = int(round((r * mh.sin(k))*size + origin[1]))
 
         FillPixel(canvas, (x+origin[0],y+origin[1]))
         i+=detail
@@ -206,6 +206,7 @@ def MakeLissajous(canvas, center, xLobes, yLobes, size=50):
         #last = (x,y)
         i+=detail
 
+
 def MakeParametric(canvas, center, size=50):
     #last = None
     max = 100
@@ -223,3 +224,50 @@ def MakeParametric(canvas, center, size=50):
             #MakeLine(canvas, (x,y), last)
         #last = (x,y)
         i+=detail
+
+#only to be copied, does not do anything
+def MakeParametric(canvas, center, size=50):
+    #last = None
+    max = 100
+    i=0.01
+    detail=0.01
+
+    while i < max:
+        x = None
+        y = None
+        x = int(round(x*size + center[0]))
+        y = int(round(y*size + center[1]))
+
+        FillPixel(canvas, (x,y))
+        #if last is not None:
+            #MakeLine(canvas, (x,y), last)
+        #last = (x,y)
+        i+=detail
+
+def MakeNormalSpiral(canvas, center, radius=5, maxRadius=80, detail=0.01, radiusSpeed=0.5, reverse=False, start=0):
+    # radius, maxRadius=math.inf):
+    # i = -math.pi
+    # xCord, yCord = pyg.position()
+    # xCord += radius
+    # while radius < maxRadius:
+    #     if(keyboard.is_pressed("esc")):
+    #         break
+    #     xMod = int(round(math.cos(i)*radius, 0))
+    #     yMod = int(round(math.sin(i)*radius, 0))
+    #     pyg.moveTo(xCord+xMod, yCord+yMod, duration=moveDuration)
+    #     inverseClick()
+    #     i+= 0.05
+    #     radius += 0.06
+    i=start
+    while radius < maxRadius:
+        xMod = int(round(mh.cos(i)*radius, 0))
+        yMod = int(round(mh.sin(i)*radius, 0))
+        FillPixel(canvas, (center[0]+xMod, center[1]+yMod))
+        if(reverse):
+            i-= detail
+        else:
+            i+=detail
+        radius+= radiusSpeed
+
+
+
